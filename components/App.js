@@ -18,35 +18,38 @@ App = React.createClass({
             });
         }.bind(this));
     },
-    getGif: function (searchingText, callback) {
+    getGif: function (searchingText) {
         return new Promise(
             function (resolve, reject) {
                 var GIPHY_API_URL = 'http://api.giphy.com';
                 var GIPHY_PUB_KEY = 'u8WWIhVx1ZAFE6qpbLKphC9kx9YN17DI';
                 var url = GIPHY_API_URL + '/v1/gifs/random?api_key=' + GIPHY_PUB_KEY + '&tag=' + searchingText;
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', url);
-                xhr.onload = function () {
+                var request = new XMLHttpRequest();
+                request.onload = function () {
                     if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText).data;
-                        if (data.type === 'gif') {
+                        var data = JSON.parse(xhr.responseText).data;  
                             var gif = {
                                 url: data.fixed_width_downsampled_url,
                                 sourceUrl: data.url
                             };
                             resolve(this.response);
-                        }
-                        else {
-                            reject(new Error(this.statusText));
-                        }
                     }
                     else {
                         reject(new Error(this.statusText));
                     }
                 };
-                xhr.send();
+                request.onerror = function () {
+                    reject(new Error(
+                       `XMLHttpRequest Error: ${this.statusText}`));
+                };
+                request.open('GET', url);
+                request.send();
             });
+            httpGet(url)
+            .then(response => console.log('Contents: ' + response))
+            .catch(error => console.error('Something went wrong', error));
     },
+
     render: function () {
         var styles = {
             margin: '0 auto',
